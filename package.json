@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "The yeoman generator for the react webapp.",
   "author": "Mo Wang",
+  "license": "MIT",
   "files": [
     "generators"
   ],

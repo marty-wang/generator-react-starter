@@ -1,9 +1,20 @@
 {
   "name": "@marty_wang/generator-react-starter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The yeoman generator for the react webapp.",
   "author": "Mo Wang",
   "license": "MIT",
+  "keywords": [
+    "yeoman-generator",
+    "react",
+    "webpack",
+    "typescript",
+    "mobx"
+  ],
+  "repository": {
+    "type" : "git",
+    "url" : "hhttps://github.com/marty-wang/generator-react-starter.git"
+  },
   "files": [
     "generators"
   ],

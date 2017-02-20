@@ -22,7 +22,7 @@ module.exports = class extends Generator {
             {
                 type: 'input',
                 name: 'name',
-                message: 'Your app name',
+                message: 'Your app name:',
                 default: this.appname
             },
             {
@@ -30,10 +30,25 @@ module.exports = class extends Generator {
                 name: 'useMobX',
                 message: 'Would you like to use MobX to manage the app state?',
                 default: false
+            },
+            {
+                type: 'checkbox',
+                name: 'packages',
+                message: 'Please select additional packages to add:',
+                choices: [{ name: 'glamor - css in js', value: 'glamor:^2.20.23', short: 'glamor' }]
             }
         ]).then((answers) => {
             this._appName = answers.name;
             this._useMobX = answers.useMobX;
+            this._packages = answers.packages;
+
+            if (this._useMobX) {
+                this._packages.push(
+                    'mobx:^3.1.0',
+                    'mobx-react:^4.1.0',
+                    'mobx-react-devtools:^4.2.11:dev'
+                );
+            }
         });
     }
 
@@ -50,21 +65,13 @@ module.exports = class extends Generator {
             appTitle: _.startCase(this._appName)
         });
 
+        this._copyPackageJson();
+
         if (this._useMobX) {
-            this._copyPackageJson((json) => {
-                overwrite(json, 'dependencies', {
-                    "mobx": "^3.1.0",
-                    "mobx-react": "^4.1.0"
-                });
-                overwrite(json, 'devDependencies', {
-                    "mobx-react-devtools": "^4.2.11"
-                });
-            });
             this._copy('src/_store/*', 'src/store');
             this._copy('src/_Index.mobx.tsx', 'src/Index.tsx');
             this._copy('src/components/_App.mobx.tsx', 'src/components/App.tsx');
         } else {
-            this._copyPackageJson();
             this._copy('src/_Index.tsx', 'src/Index.tsx');
             this._copy('src/components/_App.tsx', 'src/components/App.tsx');
         }
@@ -78,10 +85,22 @@ module.exports = class extends Generator {
         this.fs.copyTpl(this.templatePath(source), this.destinationPath(destination), dataObj);
     }
 
-    _copyPackageJson(callback) {
-        const packageJson = this.fs.readJSON(this.templatePath('_package.json'));
-        packageJson.name = _.kebabCase(this._appName);
-        callback && callback(packageJson);
-        this.fs.writeJSON(this.destinationPath('package.json'), packageJson);
+    _copyPackageJson() {
+        const json = this.fs.readJSON(this.templatePath('_package.json'));
+        const packages = [];
+        const devPackages = [];
+
+        this._packages.forEach(p => {
+            const arr = p.split(':');
+            const packs = arr[2] === 'dev' ? devPackages : packages;
+            packs[arr[0]] = arr[1];
+        });
+
+        json.name = _.kebabCase(this._appName);
+
+        overwrite(json, 'dependencies', packages);
+        overwrite(json, 'devDependencies', devPackages);
+
+        this.fs.writeJSON(this.destinationPath('package.json'), json);
     }
 };

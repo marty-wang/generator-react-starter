@@ -6,16 +6,21 @@ const chalk = require('chalk');
 const _ = require('lodash');
 
 const overwrite = (target, propName, overwrites) => {
-    const original = target[propName];
+    const copy = _.assign({}, target[propName], overwrites);
 
-    Object.keys(overwrites).forEach(key => {
-        original[key] = overwrites[key];
-    });
-
-    target[propName] = Object.keys(original).sort().reduce((result, curKey) => {
-        result[curKey] = original[curKey];
+    target[propName] = Object.keys(copy).sort().reduce((result, curKey) => {
+        result[curKey] = copy[curKey];
         return result;
     }, {});
+};
+
+const dependencies = {
+    mobx: [
+        'mobx:^3.1.0',
+        'mobx-react:^4.1.0',
+        'mobx-react-devtools:^4.2.11:dev'
+    ],
+    glamor: ['glamor:^2.20.23']
 };
 
 module.exports = class extends Generator {
@@ -33,29 +38,30 @@ module.exports = class extends Generator {
                 default: this.appname
             },
             {
-                type: 'confirm',
-                name: 'useMobX',
-                message: 'Would you like to use MobX to manage the app state?',
-                default: false
-            },
-            {
                 type: 'checkbox',
                 name: 'packages',
                 message: 'Please select additional packages to add:',
-                choices: [{ name: 'glamor - css in js', value: 'glamor:^2.20.23', short: 'glamor' }]
+                choices: [
+                    { name: 'MobX - state management based on observable', value: 'mobx', short: 'mobx' },
+                    { name: 'glamor - css in js', value: 'glamor', short: 'glamor' }
+                ]
             }
         ]).then((answers) => {
-            this._appName = answers.name;
-            this._useMobX = answers.useMobX;
-            this._packages = answers.packages;
+            const packages = answers.packages;
 
-            if (this._useMobX) {
-                this._packages.push(
-                    'mobx:^3.1.0',
-                    'mobx-react:^4.1.0',
-                    'mobx-react-devtools:^4.2.11:dev'
-                );
-            }
+            this._appName = answers.name;
+            this._useMobX = _.includes(packages, 'mobx');
+            this._packages = [];
+            this._devPackages = [];
+
+            packages.forEach(p => {
+                const deps = dependencies[p];
+                deps.forEach(d => {
+                    const arr = d.split(':');
+                    const packs = arr[2] === 'dev' ? this._devPackages : this._packages;
+                    packs[arr[0]] = arr[1];
+                });
+            });
         });
     }
 
@@ -112,19 +118,11 @@ module.exports = class extends Generator {
 
     _copyPackageJson() {
         const json = this.fs.readJSON(this.templatePath('_package.json'));
-        const packages = [];
-        const devPackages = [];
-
-        this._packages.forEach(p => {
-            const arr = p.split(':');
-            const packs = arr[2] === 'dev' ? devPackages : packages;
-            packs[arr[0]] = arr[1];
-        });
-
+        
         json.name = _.kebabCase(this._appName);
 
-        overwrite(json, 'dependencies', packages);
-        overwrite(json, 'devDependencies', devPackages);
+        overwrite(json, 'dependencies', this._packages);
+        overwrite(json, 'devDependencies', this._devPackages);
 
         this.fs.writeJSON(this.destinationPath('package.json'), json);
     }

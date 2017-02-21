@@ -21,7 +21,7 @@ const overwrite = (target, propName, overwrites) => {
 module.exports = class extends Generator {
     prompting() {
         this.log(yosay(
-            `Yo! Let me help you quickly set up your ${chalk.yellow('React')} webapp with ${chalk.yellow('TypeScript')}.`,
+            `Yo! Let me help you quickly set up your ${chalk.yellow('React')} webapp with ${chalk.yellow('TypeScript')}. Please make sure that you have ${chalk.red('Yarn')} installed before continuing.`,
             { maxLength: 40 }
         ));
 
@@ -82,6 +82,24 @@ module.exports = class extends Generator {
             this._copy('src/_Index.tsx', 'src/Index.tsx');
             this._copy('src/components/_App.tsx', 'src/components/App.tsx');
         }
+    }
+
+    install() {
+        if (!this.options['skip-install']) {
+            this.installDependencies({
+                bower: false,
+                npm: false,
+                yarn: true
+            });
+        }
+    }
+
+    end() {
+        const message = this.options['skip-install']
+            ? `Please install dependencies by executing '${chalk.yellow('yarn')}' before getting started.`
+            : `Congratulations! Your '${chalk.yellow(this._appName)}' app is successfully set up. Please run '${chalk.yellow('npm start')}' to get started.`
+
+        this.log(message);
     }
 
     _copy(source, destination) {

@@ -1,6 +1,8 @@
 'use strict';
 
 const Generator = require('yeoman-generator');
+const yosay = require('yosay');
+const chalk = require('chalk');
 const _ = require('lodash');
 
 const overwrite = (target, propName, overwrites) => {
@@ -18,6 +20,11 @@ const overwrite = (target, propName, overwrites) => {
 
 module.exports = class extends Generator {
     prompting() {
+        this.log(yosay(
+            `Yo! Let me help you quickly set up your ${chalk.yellow('React')} webapp with ${chalk.yellow('TypeScript')}.`,
+            { maxLength: 40 }
+        ));
+
         return this.prompt([
             {
                 type: 'input',

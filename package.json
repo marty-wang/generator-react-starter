@@ -1,29 +1,21 @@
 {
-  "name": "@marty_wang/generator-react-starter",
-  "version": "1.3.0",
-  "description": "The yeoman generator for the react webapp.",
-  "author": "Mo Wang",
-  "license": "MIT",
-  "keywords": [
-    "yeoman-generator",
-    "react",
-    "webpack",
-    "typescript",
-    "mobx"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/marty-wang/generator-react-starter.git"
-  },
-  "files": [
-    "generators"
-  ],
-  "dependencies": {
-    "@types/yeoman-generator": "^1.0.1",
-    "@types/yosay": "^0.0.28",
-    "chalk": "^1.1.3",
-    "lodash": "^4.17.4",
-    "yeoman-generator": "^1.1.0",
-    "yosay": "^2.0.0"
-  }
+    "name": "@marty_wang/generator-react-starter",
+    "version": "1.4.0",
+    "description": "The yeoman generator for the react webapp.",
+    "author": "Mo Wang",
+    "license": "MIT",
+    "keywords": ["yeoman-generator", "react", "webpack", "typescript", "mobx"],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/marty-wang/generator-react-starter.git"
+    },
+    "files": ["generators"],
+    "dependencies": {
+        "@types/yeoman-generator": "^1.0.1",
+        "@types/yosay": "^0.0.28",
+        "chalk": "^1.1.3",
+        "lodash": "^4.17.4",
+        "yeoman-generator": "^1.1.0",
+        "yosay": "^2.0.0"
+    }
 }

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 
 export interface ICounterProps {
     count: number;
@@ -6,7 +6,7 @@ export interface ICounterProps {
     onDecrease: () => void;
 }
 
-export class Counter extends React.Component<ICounterProps, void> {
+export class Counter extends React.Component<ICounterProps> {
     public render() {
         const { count, onIncrease, onDecrease } = this.props;
         return (

@@ -1,14 +1,14 @@
-import * as React from 'react';
-import { observer } from 'mobx-react';
-import { Store } from 'src/store';
-import { Counter } from 'src/components/Counter';
+import * as React from "react";
+import { observer } from "mobx-react";
+import { Store } from "src/store";
+import { Counter } from "src/components/Counter";
 
 export interface IAppProps {
     store: Store;
 }
 
 @observer
-export class App extends React.Component<IAppProps, void> {
+export class App extends React.Component<IAppProps> {
     public render() {
         const { store } = this.props;
         return (
@@ -17,7 +17,8 @@ export class App extends React.Component<IAppProps, void> {
                 <Counter
                     count={store.count}
                     onDecrease={() => store.decrease()}
-                    onIncrease={() => store.increase()}/>
+                    onIncrease={() => store.increase()}
+                />
             </div>
         );
     }

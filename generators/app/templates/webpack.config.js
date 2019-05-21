@@ -3,40 +3,35 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserJSPlugin = require('terser-webpack-plugin');
 
 const entry = { app: ['./src/Index.tsx'] };
 
 const plugins = [
     new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-        __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),
+        __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true'))
     }),
     new HtmlWebpackPlugin({
         template: 'src/index.html'
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
-        minChunks: function (module) {
-            // this assumes your vendor imports exist in the node_modules directory
-            return module.context && module.context.indexOf('node_modules') !== -1;
-        }
     })
 ];
 
 let cssLoader;
 
 if (process.env.NODE_ENV === 'production') {
-    const ExtractTextPlugin = require("extract-text-webpack-plugin");
+    const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
     cssLoader = {
         test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-            use: 'css-loader'
-        })
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
     };
 
     plugins.push(
-        new ExtractTextPlugin('styles.[hash].css')
+        new MiniCssExtractPlugin({
+            filename: '[name].min.css'
+        })
     );
 } else {
     const WebpackNotifierPlugin = require('webpack-notifier');
@@ -48,22 +43,18 @@ if (process.env.NODE_ENV === 'production') {
         use: ['style-loader', 'css-loader']
     };
 
-    plugins.push(
-        new WebpackNotifierPlugin(),
-        new webpack.HotModuleReplacementPlugin()
-    );
+    plugins.push(new WebpackNotifierPlugin(), new webpack.HotModuleReplacementPlugin());
 }
 
 module.exports = {
+    mode: 'development',
+
     devtool: 'source-map',
 
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
-        modules: [
-            path.resolve('.'),
-            "node_modules"
-        ]
+        modules: [path.resolve('.'), 'node_modules']
     },
 
     module: {
@@ -78,9 +69,7 @@ module.exports = {
                 enforce: 'pre',
                 test: /\.tsx?$/,
                 loader: 'tslint-loader',
-                exclude: [
-                    path.resolve(__dirname, 'node_modules')
-                ],
+                exclude: [path.resolve(__dirname, 'node_modules')],
                 options: {
                     emitErrors: true,
                     failOnHint: true
@@ -88,7 +77,7 @@ module.exports = {
             },
             {
                 test: /\.tsx?$/,
-                loader: 'awesome-typescript-loader',
+                loader: 'ts-loader',
                 exclude: path.resolve(__dirname, 'node_modules')
             },
             cssLoader
@@ -102,5 +91,22 @@ module.exports = {
         filename: '[name].[hash].js'
     },
 
-    plugins
+    plugins,
+
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                vendors: {
+                    test: mod => {
+                        return /[\\/]node_modules[\\/]/.test(mod.context);
+                    },
+                    chunks: 'initial',
+                    name: 'vendors',
+                    priority: 10,
+                    enforce: true
+                }
+            }
+        },
+        minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})]
+    }
 };
